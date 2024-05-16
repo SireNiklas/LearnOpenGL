@@ -24,12 +24,20 @@ const char *vertextShaderSource = "#version 330 core\n"
 #pragma endregion
 
 #pragma region Fragment Shader Source
-const char *fragmentShaderSource = "#version 330 core\n"
+const char *fragment1ShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
 				// Vec4(x, y, z, and w)
 "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"}\n";
+
+const char* fragment2ShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+// Vec4(x, y, z, and w)
+"    FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
 "}\n";
 #pragma endregion
 #pragma endregion
@@ -77,47 +85,85 @@ int main() {
 	}
 #pragma endregion
 #pragma region Fragment Shader
-	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
+	unsigned int fragment1Shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment1Shader, 1, &fragment1ShaderSource, NULL);
+	glCompileShader(fragment1Shader);
 
 	// Error Handling
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(fragment1Shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		glGetShaderInfoLog(fragment1Shader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
+
+	unsigned int fragment2Shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment2Shader, 1, &fragment2ShaderSource, NULL);
+	glCompileShader(fragment2Shader);
+
+	// Error Handling
+	glGetShaderiv(fragment2Shader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		glGetShaderInfoLog(fragment2Shader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 #pragma endregion
 #pragma region Shader Program
-	unsigned int shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
+	unsigned int shader1Program = glCreateProgram();
+	glAttachShader(shader1Program, vertexShader);
+	glAttachShader(shader1Program, fragment1Shader);
+	glLinkProgram(shader1Program);
+
+	unsigned int shader2Program = glCreateProgram();
+	glAttachShader(shader2Program, vertexShader);
+	glAttachShader(shader2Program, fragment2Shader);
+	glLinkProgram(shader2Program);
 
 	// Error handling
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	glGetProgramiv(shader2Program, GL_LINK_STATUS, &success);
 	if (!success)
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		glGetProgramInfoLog(shader2Program, 512, NULL, infoLog);
 #pragma endregion
 	// Clean up
+	glDetachShader(shader1Program, vertexShader);
+	glDetachShader(shader1Program, fragment1Shader);
+	glDetachShader(shader2Program, vertexShader);
+	glDetachShader(shader2Program, fragment2Shader);
+
 	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	glDeleteShader(fragment1Shader);
+	glDeleteShader(fragment2Shader);
 #pragma endregion
 
 	// Triangle
 	//float vertices[] = {
-	//	-0.5f, -0.5f, 0.0f,
-	//	 0.5f, -0.5f, 0.0f,
-	//	 0.0f, 0.5f, 0.0f
+	//	-0.5f, 0.5f, 0.0f,	// Top Right
+	//	 0.0f, -1.0f, 0.0f,	// Right
+	//	-1.0f, -1.0f, 0.0f,	// Left
+
+	//	 0.5f, 0.5f, 0.0f,	// Top
+	//	 1.0f, -1.0f, 0.0f,	// Right
+	//	 0.0f, -1.0f, 0.0f	// Left
 	//};
 
-	// Square
-	float vertices[] = {
-		 0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
+	float Triangle1Vertices[] = {
+	-0.5f, 0.5f, 0.0f,	// Top Right
+	 0.0f, -1.0f, 0.0f,	// Right
+	-1.0f, -1.0f, 0.0f,	// Left
 	};
+
+	float Triangle2Vertices[] = {
+	 0.5f, 0.5f, 0.0f,	// Top
+	 1.0f, -1.0f, 0.0f,	// Right
+	 0.0f, -1.0f, 0.0f	// Left
+	};
+
+	// Square
+	//float vertices[] = {
+	//	 0.5f,  0.5f, 0.0f,	// top right
+	//	 0.5f, -0.5f, 0.0f,	// bottom right
+	//	-0.5f, -0.5f, 0.0f,	// bottom left
+	//	-0.5f,  0.5f, 0.0f	// top left
+	//};
 
 	unsigned int indices[] = {
 		0, 1, 3,	// First Triangle
@@ -125,27 +171,49 @@ int main() {
 	};
 
 #pragma region OpenGL Graphics Pipeline
-	// Create VBO & VAO
-	unsigned int VAO, VBO, EBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	//// Create VBO & VAO
+	//unsigned int VAO, VBO, EBO;
+	//glGenVertexArrays(1, &VAO);
+	//glGenBuffers(1, &VBO);
+	//glGenBuffers(1, &EBO);
 
-	// Bind Vertext Array Object first, the bind and set buffers
-	glBindVertexArray(VAO);
+	//// Bind Vertext Array Object first, then bind and set buffers
+	//glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	//glEnableVertexAttribArray(0);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	//glBindVertexArray(0);
+
+	unsigned int Triangle1VBO, Triangle1VAO, Triangle2VBO, Triangle2VAO;
+	// Triangle 1
+	glGenVertexArrays(1, &Triangle1VAO);
+	glGenBuffers(1, &Triangle1VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, Triangle1VBO);
+	glBindVertexArray(Triangle1VAO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle1Vertices), Triangle1Vertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glGenVertexArrays(1, &Triangle2VAO);
+	glGenBuffers(1, &Triangle2VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, Triangle2VBO);
+	glBindVertexArray(Triangle2VAO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle2Vertices), Triangle2Vertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
 	glBindVertexArray(0);
+
+
 #pragma endregion
 
 	// Render Loop
@@ -158,11 +226,16 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Drawn Triangle
-		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glUseProgram(shader1Program);
+		glBindVertexArray(Triangle1VAO);
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		glUseProgram(shader2Program);
+		glBindVertexArray(Triangle2VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawArrays(GL_TRIANGLES, 3, 6);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		
 		// Swap Buffers and Pull IO Events
@@ -171,10 +244,16 @@ int main() {
 	}
 
 	// GL Cleanup | Optional
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
-	glDeleteProgram(shaderProgram);
+	//glDeleteVertexArrays(1, &VAO);
+	//glDeleteBuffers(1, &VBO);
+	//glDeleteBuffers(1, &EBO);
+	glDeleteVertexArrays(1, &Triangle1VAO);
+	glDeleteVertexArrays(1, &Triangle2VAO);
+	glDeleteBuffers(1, &Triangle1VBO);
+	glDeleteBuffers(1, &Triangle2VBO);
+
+	glDeleteProgram(shader1Program);
+	glDeleteProgram(shader2Program);
 
 	// GLFW Cleanup
 	glfwTerminate();
@@ -191,4 +270,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void proccessInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
