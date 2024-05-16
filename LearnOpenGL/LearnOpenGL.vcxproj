@@ -132,8 +132,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\GLAD-OpenGL-3.3\glad\src\glad.c" />
+    <ClCompile Include="..\..\..\Dependencies\OpenGL\src\glad\glad.c" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Shader.h" />
@@ -141,6 +142,10 @@
   <ItemGroup>
     <None Include="src\shaders\shader.frag" />
     <None Include="src\shaders\shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\resources\awesomeface.png" />
+    <Image Include="src\resources\container.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

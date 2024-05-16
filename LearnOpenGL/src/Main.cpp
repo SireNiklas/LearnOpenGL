@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
 
 #include <iostream>
 
@@ -42,26 +43,82 @@ int main() {
 
 	Shader ourShader("C:/dev/cpp/LearnOpenGL/LearnOpenGL/src/shaders/shader.vert", "C:/dev/cpp/LearnOpenGL/LearnOpenGL/src/shaders/shader.frag");
 
+# pragma region Vertex Data
 	// Triangle
-	float vertices[] = {
-		// Positions			// Colors
-		 0.5f, -0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	// Bottom Right | Red
-		-0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,	// Bottom Left | Green
-		 0.0f,  0.5f, 0.0f,		0.0f, 0.0f, 1.0f	// Top | Blue
-	};
-
-	// Square
 	//float vertices[] = {
-	//	 0.5f,  0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	// Top | Blue
+	//	// Positions			// Colors
 	//	 0.5f, -0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	// Bottom Right | Red
 	//	-0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,	// Bottom Left | Green
-	//	-0.5f,  0.5f, 0.0f,		1.0f, 0.9f, 0.0f	// Top | Blue 
+	//	 0.0f,  0.5f, 0.0f,		0.0f, 0.0f, 1.0f	// Top | Blue
 	//};
+
+	// Square
+	float vertices[] = {
+		// Positions			// Colors			// Texture Coords
+		 0.5f,  0.5f, 0.0f,		1.0f, 0.0f, 1.0f,	1.0f, 1.0f,	// Top Right | Red
+		 0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,	1.0f, 0.0f,	// Bottom Right | Green
+		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	0.0f, 0.0f,	// Bottom Left | Blue
+		-0.5f,  0.5f, 0.0f,		1.0f, 1.0f, 0.0f,	0.0f, 1.0f	// Top Left | Yellow 
+	};
 
 	unsigned int indices[] = {
 		0, 1, 3,	// First Triangle
 		1, 2, 3		// Second Triangle
 	};
+
+	float texCoords[] = {
+		0.0f, 0.0f,		// Lower Left Corner
+		1.0f, 0.0f,		// Lower Right Corner
+		0.5f, 1.0f		// Top Center Corner
+	};
+#pragma endregion
+
+#pragma region Textures
+	unsigned int texture1, texture2;
+	glGenTextures(1, &texture1);
+
+	// Bind Texture
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	// Configurations
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Load and generate the texture
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("C:/dev/cpp/LearnOpenGL/LearnOpenGL/src/resources/container.jpg", &width, &height, &nrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+
+	data = stbi_load("C:/dev/cpp/LearnOpenGL/LearnOpenGL/src/resources/awesomeface.png", &width, &height, &nrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture" << std::endl;
+	}
+
+	stbi_image_free(data);
+#pragma endregion
+
 
 #pragma region OpenGL Graphics Pipeline
 	// Create VBO & VAO
@@ -79,16 +136,23 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6* sizeof(float)));
 	glEnableVertexAttribArray(1);
+	
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6* sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 #pragma endregion
+
+	ourShader.use();
+	glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+	ourShader.setInt("texture2", 1);
 
 	// Render Loop
 	while (!glfwWindowShouldClose(window)) {
@@ -99,19 +163,14 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Drawn Triangle
-		ourShader.use();
-		//glUseProgram(shaderProgram);
-
-		//float timeValue = glfwGetTime();
-		//float greenValue = sin(timeValue) / 2.0f + 0.5f;
-		//int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		//glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-
+		// Draw Triangle
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		
 		// Swap Buffers and Pull IO Events
