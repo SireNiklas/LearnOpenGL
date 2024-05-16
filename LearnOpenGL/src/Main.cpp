@@ -14,6 +14,8 @@ void proccessInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+float opacitySwitch = 0;
+
 int main() {
 
 	#pragma region Create Window
@@ -81,10 +83,12 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
 	// Configurations
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	// Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// Load and generate the texture
 	int width, height, nrChannels;
 	unsigned char* data = stbi_load("C:/dev/cpp/LearnOpenGL/LearnOpenGL/src/resources/container.jpg", &width, &height, &nrChannels, 0);
@@ -102,8 +106,8 @@ int main() {
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	stbi_set_flip_vertically_on_load(true);
 
@@ -172,6 +176,8 @@ int main() {
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
+		ourShader.setFloat("opacitySwitch", opacitySwitch);
 		
 		// Swap Buffers and Pull IO Events
 		glfwSwapBuffers(window);
@@ -199,4 +205,13 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void proccessInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		if (opacitySwitch != 1.0f) {
+			opacitySwitch += 0.01f;
+		}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		if (opacitySwitch != -1.0f) {
+			opacitySwitch -= 0.01f;
+		}
 }
