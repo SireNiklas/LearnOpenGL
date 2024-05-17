@@ -1,5 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <stb_image.h>
 
 #include <iostream>
@@ -154,6 +157,17 @@ int main() {
 	glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
 	ourShader.setInt("texture2", 1);
 
+	/*
+	// Our vector
+	glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+	// Matrix 4D | Initialize to matrix diagonals to 1.0 (Identity Matrix), otherwise would all return null(0)
+	glm::mat4 trans = glm::mat4(1.0f);
+	// Create a transformation matrix
+	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f)); // (1+1, 0+1, 0+0) = (2, 1, 0) = 210 | this is the correct output.
+	vec = trans * vec;
+	std::cout << vec.x << vec.y << vec.z << std::endl;
+	*/
+
 	// Render Loop
 	while (!glfwWindowShouldClose(window)) {
 		// Proccess Input
@@ -163,6 +177,14 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// Place and rotate in bottom left corner
+		glm::mat4 trans = glm::mat4(1.0f);
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
+
+		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
 		// Draw Triangle
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -170,6 +192,8 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		
