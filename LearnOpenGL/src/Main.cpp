@@ -19,32 +19,32 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main() {
 
-	#pragma region Create Window
-		// Initialize and configure
-		glfwInit();
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#pragma region Create Window
+	// Initialize and configure
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		// Window Creation
-		GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-		if (window == NULL) {
-			std::cout << "Failed to create GLFW window" << std::endl;
-			glfwTerminate();
-			return -1;
-		}
+	// Window Creation
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	if (window == NULL) {
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
 
-		glfwMakeContextCurrent(window);
-		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-		// GLAD: Load all function pointers
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			std::cout << "Failed to initialize GLAD" << std::endl;
-			return -1;
-		}
+	// GLAD: Load all function pointers
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
 
-		glEnable(GL_DEPTH_TEST);
-	#pragma endregion
+	glEnable(GL_DEPTH_TEST);
+#pragma endregion
 
 	Shader ourShader("C:/dev/cpp/LearnOpenGL/LearnOpenGL/src/shaders/shader.vert", "C:/dev/cpp/LearnOpenGL/LearnOpenGL/src/shaders/shader.frag");
 
@@ -201,10 +201,10 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3* sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3* sizeof(float)));
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -234,7 +234,7 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 		// Proccess Input
 		proccessInput(window);
-		
+
 		// Render
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -246,7 +246,7 @@ int main() {
 		// View
 		glm::mat4 view = glm::mat4(1.0f);
 		// Move scene inverse
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		view = glm::translate(view, (float)glfwGetTime() * glm::vec3(0.0f, 0.0f, -3.0f));
 
 		// Perspective Projection, real perspective
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -272,13 +272,15 @@ int main() {
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
 			float angle = 20.0f * i;
-			model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+			if (i % 3 == 0)  // every 3rd iteration (including the first) we set the angle using GLFW's time function.
+				angle = glfwGetTime() * 25.0f;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
 			int modelLoc = glGetUniformLocation(ourShader.ID, "model");
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
-		
+
 		// Swap Buffers and Pull IO Events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
