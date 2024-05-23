@@ -32,12 +32,21 @@
     <ClInclude Include="src\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\shader.frag" />
     <None Include="src\shaders\shader.vert" />
     <None Include="src\shaders\lightshader.vert" />
     <None Include="src\shaders\lightshader.frag" />
+    <None Include="..\..\..\Dependencies\Assimp\src\assimp-vc143-mtd.dll" />
+    <None Include="src\shaders\model.vert" />
+    <None Include="src\shaders\model.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\resources\container.jpg">
